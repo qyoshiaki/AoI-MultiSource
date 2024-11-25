@@ -611,6 +611,8 @@ void read_arg(int argc, char* argv[],  PhDist*& SamplingDist, Distribution*& srv
 			<< "Cv of service time of background stream\n"
 			<< "    --mu:\t\t" 
 			<< "Service rate\n"
+			<< "    --output:\t\t"
+			<< "Output file name\n"
 			<< std::endl;
 			
 			exit(0);
