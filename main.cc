@@ -616,7 +616,7 @@ void read_arg(int argc, char* argv[],  PhDist*& SamplingDist, Distribution*& srv
 			exit(0);
 		}
 	}
-　}
+  }
 
   if(CvG > 0 && CvG < 1){
     SamplingDist = new MixErDist(EG, CvG);
