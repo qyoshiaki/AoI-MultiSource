@@ -13,8 +13,6 @@
 #include<unistd.h>
 #include<getopt.h> 
 
-//#include<gsl/gsl_sf_gamma.h>
-
 #include"matrix/matrix.h"
 #include"matrix/myVector.h"
 #include"distribution/distribution.h"
@@ -46,81 +44,24 @@ void read_arg(int argc, char* argv[],  PhDist*& SamplingDist, Distribution*& srv
 // Compute the invariant probability vector of a transition rate matrix by iteration
 RowVector computeIPV(const Matrix& mat, double tolerance, int max_iter);
 
-double h_bg_LST(double s, double EH_bg){
-  return std::exp(-s*EH_bg);
-}
-
-double h_LST(double s, double EH){
-  return std::exp(-s*EH);
-}
-
-double phi(double s, double lmd_bg, double mu, double EH_bg){
-  return s - lmd_bg + lmd_bg*h_bg_LST(s/mu, EH_bg);
-}
-
-double psi(double omega, double lmd_bg, double mu, double EH_bg){
-  double low = 0.0;
-  double high = omega + lmd_bg;
-
-  for(int i=0; i < MAX_ITER; i++){ 
-    double x = (high+low)/2.0;
-    double val = phi(x, lmd_bg, mu, EH_bg);
-
-    if(val > omega){
-      high = x;
-    }else{
-      low = x;
-    }
-
-    if(high - low < 1e-14){
-      break;
-    }
-
-  }
-
-  double x = (high+low)/2.0;
-
-  return x;
-}
-
-double f_bg(double omega, double lmd_bg, double mu, double EH_bg){
-  return (omega + lmd_bg - psi(omega, lmd_bg, mu, EH_bg))/lmd_bg;
-}
-
-Matrix hatD_LST(double s, double lmd_bg, double mu, RowVector gamma, Matrix Gamma, double EH_bg, double EH){
-  int M = Gamma.size();
-  ColVector e(M);
-  e.setAllOne();
-
-  Matrix I(M,M);
-  I.setIdentity();
-
-  s = s/mu;
-
-  Matrix hatD = (-1.0*Gamma*e)*gamma*h_LST(s, EH) + I*lmd_bg*h_bg_LST(s, EH_bg);
-
-  return hatD;
-}
-
-
 int main(int argc, char* argv[]){
-	// Set output precision
-	std::cout << std::setiosflags(std::ios::fixed) << std::setprecision(14);
+  // Set output precision
+  std::cout << std::setiosflags(std::ios::fixed) << std::setprecision(14);
 
-	// Output filename
-	std::string out_file;
+  // Output filename
+  std::string out_file;
 
   // Arrival rate of the background stream
-	double lmd_bg = 0.0;
+  double lmd_bg = 0.0;
 
   // Service time distribution of the background stream
-	Distribution* srvDist_bg_ptr;
+  Distribution* srvDist_bg_ptr;
 
   // Service time distribution of the tagged stream
-	Distribution* srvDist_ptr;
+  Distribution* srvDist_ptr;
 	
   // Inter-arrival time distribution (tagged stream)
-	PhDist* arvDist_ptr;
+  PhDist* arvDist_ptr;
 
   // Service rate
   double mu = 0.0;
@@ -129,7 +70,7 @@ int main(int argc, char* argv[]){
 
   const PhDist& arvDist = *arvDist_ptr;
   const Distribution& srvDist = *srvDist_ptr;
-	const Distribution& srvDist_bg = *srvDist_bg_ptr;
+  const Distribution& srvDist_bg = *srvDist_bg_ptr;
 
   double EG = arvDist._mean;
   double CvG = arvDist._coef_v;
@@ -145,7 +86,7 @@ int main(int argc, char* argv[]){
   double EH_bg = srvDist_bg._mean;
   double CvH_bg = srvDist_bg._coef_v;
 
-	double rho_bg = lmd_bg*srvDist_bg._mean/mu;
+  double rho_bg = lmd_bg*srvDist_bg._mean/mu;
   double rho = lmd*srvDist._mean/mu;
 
   Matrix I(M,M);
@@ -154,21 +95,21 @@ int main(int argc, char* argv[]){
   ColVector e(M);
   e.setAllOne();
 
-	std::cout << "----------------------------------------------\n";
-	std::cout << "mu=" << mu << std::endl;
-	std::cout << "lambda_bg=" << lmd_bg << std::endl;
-	std::cout << "Service time distribution (background stream):" << std::endl;
-	srvDist_bg.print();
+  std::cout << "----------------------------------------------\n";
+  std::cout << "mu=" << mu << std::endl;
+  std::cout << "lambda_bg=" << lmd_bg << std::endl;
+  std::cout << "Service time distribution (background stream):" << std::endl;
+  srvDist_bg.print();
   std::cout << std::endl;
 
-	std::cout << "Inter-Sampling time distribution:" << std::endl;
-	arvDist.print();
+  std::cout << "Inter-Sampling time distribution:" << std::endl;
+  arvDist.print();
   std::cout << std::endl;
 
-	std::cout << "lambda=" << lmd << std::endl;
-	std::cout << "Service time distribution (tagged stream):" << std::endl;
-	srvDist.print();
-	std::cout << "----------------------------------------------\n";
+  std::cout << "lambda=" << lmd << std::endl;
+  std::cout << "Service time distribution (tagged stream):" << std::endl;
+  srvDist.print();
+  std::cout << "----------------------------------------------\n";
 
   double theta = Gamma.getMaxAbsDiag();
   double zeta = theta + lmd_bg;
@@ -495,9 +436,9 @@ int main(int argc, char* argv[]){
   std::cout << std::setprecision(8);
   std::cout << "E[A] = " << EA << std::endl;
 
-	std::ofstream res(out_file, std::ios::app);
-	res << std::setiosflags(std::ios::fixed) 
-			<< std::setprecision(8);
+  std::ofstream res(out_file, std::ios::app);
+  res << std::setiosflags(std::ios::fixed) 
+      << std::setprecision(8);
 
   res << lmd << " " << CvG << " " << EH << " " << CvH << " " << lmd_bg << " " << EH_bg << " " << CvH_bg << " " << EA  << " " << mu << std::endl;
 
@@ -521,162 +462,161 @@ RowVector computeIPV(const Matrix& gen, double tolerance, int max_iter){
   ColVector e(M);
   e.setAllOne();
 
-	Matrix mat = I + gen*(1.0/theta);
+  Matrix mat = I + gen*(1.0/theta);
 
-	Matrix pow_mat = mat;
-	bool isConvergent = false;
+  Matrix pow_mat = mat;
+  bool isConvergent = false;
 
-	for(int i = 0; i < max_iter; i++){
-		pow_mat = pow_mat * pow_mat;
+  for(int i = 0; i < max_iter; i++){
+    pow_mat = pow_mat * pow_mat;
 
-		if( (pow_mat*gen).getMaxAbs() < tolerance){
-			isConvergent = true;
-			break;
-		} 
-	}
-	if(isConvergent){
-		return pow_mat[0]*(1.0/(pow_mat[0]*e));
-	} else{
-		std::cerr << "ERROR (getIPV): Iteration not convergent" << std::endl;
-		exit(1);
-	}
+    if( (pow_mat*gen).getMaxAbs() < tolerance){
+      isConvergent = true;
+      break;
+    } 
+  }
+  if(isConvergent){
+    return pow_mat[0]*(1.0/(pow_mat[0]*e));
+  }else{
+    std::cerr << "ERROR (getIPV): Iteration not convergent" << std::endl;
+    exit(1);
+  }
 }
 
 
 void read_arg(int argc, char* argv[],  PhDist*& SamplingDist, Distribution*& srvDist, double& lmd_bg, Distribution*& srvDist_bg, double &mu, std::string& out_file){
 
-	struct option long_options[] = {
-		{"EG",     required_argument, NULL, ARG_SAMPLING_MEAN},
-		{"CvG",    required_argument, NULL, ARG_SAMPLING_CV},
-		{"EH",     required_argument, NULL, ARG_SRVMEAN},
-		{"CvH",    required_argument, NULL, ARG_SRVCV},
-		{"lmd_bg",  required_argument, NULL, ARG_LMD_BG},
-		{"EH_bg",  required_argument, NULL, ARG_SRVMEAN_BG},
-		{"CvH_bg", required_argument, NULL, ARG_SRVCV_BG},
-		{"mu", required_argument, NULL, ARG_MU},
-		{"output", required_argument, NULL, ARG_OUTPUT},
-		{0, 0, 0, 0}
-	};
+  struct option long_options[] = {
+    {"EG",     required_argument, NULL, ARG_SAMPLING_MEAN},
+    {"CvG",    required_argument, NULL, ARG_SAMPLING_CV},
+    {"EH",     required_argument, NULL, ARG_SRVMEAN},
+    {"CvH",    required_argument, NULL, ARG_SRVCV},
+    {"lmd_bg",  required_argument, NULL, ARG_LMD_BG},
+    {"EH_bg",  required_argument, NULL, ARG_SRVMEAN_BG},
+    {"CvH_bg", required_argument, NULL, ARG_SRVCV_BG},
+    {"mu", required_argument, NULL, ARG_MU},
+    {"output", required_argument, NULL, ARG_OUTPUT},
+    {0, 0, 0, 0}
+};
 
-	std::stringstream opt_str;
-	opt_str << ARG_SAMPLING_MEAN  << ":"
-			<< ARG_SAMPLING_CV    << ":"
-			<< ARG_SRVMEAN        << ":"
-			<< ARG_SRVCV          << ":"
-			<< ARG_LMD_BG         << ":"
-			<< ARG_SRVMEAN_BG     << ":"
-			<< ARG_SRVCV_BG       << ":"
-			<< ARG_MU             << ":"
-			<< ARG_OUTPUT         << ":";
+  std::stringstream opt_str;
+  opt_str << ARG_SAMPLING_MEAN  << ":"
+          << ARG_SAMPLING_CV    << ":"
+	  << ARG_SRVMEAN        << ":"
+	  << ARG_SRVCV          << ":"
+	  << ARG_LMD_BG         << ":"
+	  << ARG_SRVMEAN_BG     << ":"
+	  << ARG_SRVCV_BG       << ":"
+	  << ARG_MU             << ":"
+	  << ARG_OUTPUT         << ":";
 
-	double EG = -1;
-	double CvG = -1;
-	double EH = -1;
-	double CvH = -1;
+  double EG = -1;
+  double CvG = -1;
+  double EH = -1;
+  double CvH = -1;
 
-	double EH_bg = -1;
-	double CvH_bg = -1;
+  double EH_bg = -1;
+  double CvH_bg = -1;
 
   int count = 0;
 
-	while(1){
-		int option_index = 0;
-		int i = getopt_long(argc, argv, opt_str.str().c_str(), 
-										long_options, &option_index);
+  while(1){
+    int option_index = 0;
+    int i = getopt_long(argc, argv, opt_str.str().c_str(), long_options, &option_index);
 
-		if(i == -1 && count == 9){break;}
+    if(i == -1 && count == 9){break;}
 
-		switch(i){
-			case ARG_SAMPLING_MEAN:
-				{
-					std::stringstream buff(optarg);
-					buff >> EG;
-          count += 1;
-					break;
-				}
-			case ARG_SAMPLING_CV: 
-				{
-					std::stringstream buff(optarg);
-					buff >> CvG;
-          count += 1;
-					break;
-				}
-			case ARG_SRVMEAN:
-				{
-					std::stringstream buff(optarg);
-					buff >> EH;
-          count += 1;
-					break;
-				}
-			case ARG_SRVCV: 
-				{
-					std::stringstream buff(optarg);
-					buff >> CvH;
-          count += 1;
-					break;
-				}
-			case ARG_LMD_BG: 
-				{
-					std::stringstream buff(optarg);
-					buff >> lmd_bg;
-          count += 1;
-					break;
-				}
-			case ARG_SRVMEAN_BG:
-				{
-					std::stringstream buff(optarg);
-					buff >> EH_bg;
-          count += 1;
-					break;
-				}
-			case ARG_SRVCV_BG: 
-				{
-					std::stringstream buff(optarg);
-					buff >> CvH_bg;
-          count += 1;
-					break;
-				}
-			case ARG_MU: 
-				{
-					std::stringstream buff(optarg);
-					buff >> mu;
-          count += 1;
-					break;
-				}
-			case ARG_OUTPUT:
-				{
-					std::stringstream buff(optarg);
-					buff >> out_file;
-          count += 1;
-					break;
-				}
-			default:
-				{
-					std::cout 
-					<< "\n"
-					<< "Usage:\n"
-					<< "    --EG:\t\t" 
-						<< "Mean inter-sampling time\n"
-					<< "    --CvG:\t\t" 
-						<< "CV of inter-sampling time\n"
-					<< "    --EH:\t\t" 
-						<< "Mean service time of tagged stream\n"
-					<< "    --CvH:\t\t" 
-						<< "Cv of service time of tagged stream\n"
-					<< "    --lmd_bg:\t\t" 
-						<< "Arrival rate of background stream\n"
-					<< "    --EH_bg:\t\t" 
-						<< "Mean service time of background stream\n"
-					<< "    --CvH_bg:\t\t" 
-						<< "Cv of service time of background stream\n"
-					<< "    --mu:\t\t" 
-						<< "Service rate\n"
-					<< std::endl;
-
-					exit(0);
-				}
+    switch(i){
+	case ARG_SAMPLING_MEAN:
+		{
+			std::stringstream buff(optarg);
+			buff >> EG;
+        		count += 1;
+			break;
+		}
+	case ARG_SAMPLING_CV: 
+		{
+			std::stringstream buff(optarg);
+			buff >> CvG;
+          		count += 1;
+			break;
+		}
+	case ARG_SRVMEAN:
+		{
+			std::stringstream buff(optarg);
+			buff >> EH;
+        		count += 1;
+			break;
+		}
+	case ARG_SRVCV: 
+		{
+			std::stringstream buff(optarg);
+			buff >> CvH;
+          		count += 1;
+			break;
+		}
+	case ARG_LMD_BG: 
+		{
+			std::stringstream buff(optarg);
+			buff >> lmd_bg;
+          		count += 1;
+			break;
+		}
+	case ARG_SRVMEAN_BG:
+		{
+			std::stringstream buff(optarg);
+			buff >> EH_bg;
+        		count += 1;
+			break;
+		}
+	case ARG_SRVCV_BG: 
+		{
+			std::stringstream buff(optarg);
+			buff >> CvH_bg;
+          		count += 1;
+			break;
+		}
+	case ARG_MU: 
+		{
+			std::stringstream buff(optarg);
+			buff >> mu;
+        		count += 1;
+			break;
+		}
+	case ARG_OUTPUT:
+		{
+			std::stringstream buff(optarg);
+			buff >> out_file;
+        		count += 1;
+			break;
+		}
+	default:
+		{
+			std::cout 
+			<< "\n"
+			<< "Usage:\n"
+			<< "    --EG:\t\t" 
+			<< "Mean inter-sampling time\n"
+			<< "    --CvG:\t\t" 
+			<< "CV of inter-sampling time\n"
+			<< "    --EH:\t\t" 
+			<< "Mean service time of tagged stream\n"
+			<< "    --CvH:\t\t" 
+			<< "Cv of service time of tagged stream\n"
+			<< "    --lmd_bg:\t\t" 
+			<< "Arrival rate of background stream\n"
+			<< "    --EH_bg:\t\t" 
+			<< "Mean service time of background stream\n"
+			<< "    --CvH_bg:\t\t" 
+			<< "Cv of service time of background stream\n"
+			<< "    --mu:\t\t" 
+			<< "Service rate\n"
+			<< std::endl;
+			
+			exit(0);
 		}
 	}
+　}
 
   if(CvG > 0 && CvG < 1){
     SamplingDist = new MixErDist(EG, CvG);
